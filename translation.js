@@ -121,6 +121,12 @@ function createKeyValuePairs(strings) {
 
     strings.forEach(str => {
         let key = generateShortKey(str);
+
+        // Skip the string if the key already exists
+        if (existingKeys.has(key)) {
+            return;
+        }
+
         let originalKey = key;
         let counter = 1;
 
@@ -166,13 +172,11 @@ function replaceStringsWithKeys(code, keyValuePairs) {
         console.log(`Processing key: "${key}", value: "${value}"`);
         // Escape special characters in the value
         const escapedValue = escapeRegExp(value);
-        // Convert both the code and the value to lowercase for case-insensitive comparison
-        const lowerCaseCode = modifiedCode.toLowerCase();
-        const lowerCaseValue = escapedValue.toLowerCase();
-        const regex = new RegExp(`(["'\`])?${lowerCaseValue}\\1?`, 'g');
-        const matches = lowerCaseCode.match(regex);
+        // Create a regex to match the value case-insensitively
+        const regex = new RegExp(escapedValue, 'gi');
+        const matches = modifiedCode.match(regex);
         if (matches) {
-            modifiedCode = modifiedCode.replace(new RegExp(escapedValue, 'gi'), `{t("${key}")}`);
+            modifiedCode = modifiedCode.replace(regex, `{t("${key}")}`);
         } else {
             console.log(`Regex: ${regex}`);
             console.error(`Error: No match found for value "${value}"`);
@@ -235,11 +239,9 @@ function processFile(filePath) {
 
     fs.appendFileSync(path.join(outputDir, 'strings.txt'), JSON.stringify(strings, null, 2) + '\n', 'utf-8');
 
-    // Append display strings to file
     fs.appendFileSync(path.join(outputDir, 'display.txt'), `// ${baseName}\n`, 'utf-8');
     fs.appendFileSync(path.join(outputDir, 'display.txt'), JSON.stringify(displayStrings, null, 2) + '\n', 'utf-8');
 
-    // Append key-value pairs to file
     fs.appendFileSync(path.join(outputDir, 'keyValuePairs.txt'), `// ${baseName}\n`, 'utf-8');
     fs.appendFileSync(path.join(outputDir, 'keyValuePairs.txt'), JSON.stringify(keyValuePairs, null, 2) + '\n', 'utf-8');
 
