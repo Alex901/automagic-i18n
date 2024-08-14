@@ -1,0 +1,1 @@
+# automagic-i18n
